@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Activity, ExternalLink, Code2 } from "lucide-react";
+import { Activity } from "lucide-react";
+import { ContactWidgets } from "./ContactWidgets";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -91,19 +92,10 @@ export function Footer() {
               customer data is processed or stored.
             </p>
             <div className="flex items-center gap-4">
-              <a
-                href="https://github.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-[11px] text-zinc-700 hover:text-zinc-400 transition-colors"
-              >
-                <Code2 className="h-3.5 w-3.5" />
-                GitHub
-                <ExternalLink className="h-2.5 w-2.5" />
-              </a>
-              <span className="text-zinc-800 text-xs">·</span>
-              <span className="text-[11px] text-zinc-700">
-                All processing is 100% client-side
+              <ContactWidgets />
+              <span className="text-zinc-800 text-xs hidden sm:inline">·</span>
+              <span className="text-[11px] text-zinc-700 hidden sm:inline">
+                100% client-side processing
               </span>
             </div>
           </div>

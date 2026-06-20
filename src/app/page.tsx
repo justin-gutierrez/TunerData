@@ -177,6 +177,13 @@ export default function HomePage() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
+                  href="/upload"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors shadow-lg shadow-red-900/40 text-sm"
+                >
+                  Upload Your Run!
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
                   href="/metrics"
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-white/10 text-zinc-300 font-semibold hover:bg-white/5 hover:text-white transition-colors text-sm"
                 >
@@ -185,15 +192,6 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              {/* Stats bar */}
-              <div className="grid grid-cols-4 gap-4 pt-6 border-t border-white/5">
-                {stats.map((s) => (
-                  <div key={s.label} className="text-center">
-                    <div className="text-2xl font-bold text-white">{s.value}</div>
-                    <div className="text-xs text-zinc-500 mt-0.5">{s.label}</div>
-                  </div>
-                ))}
-              </div>
             </div>
 
             {/* Right: terminal preview */}
@@ -335,13 +333,22 @@ export default function HomePage() {
                 Select a preconfigured demo log — a good pull, an early-lift failure, wrong gear,
                 missing channels, and more. Run validation and explore the full results dashboard.
               </p>
-              <Link
-                href="/demo"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-red-600 text-white font-bold text-lg hover:bg-red-500 transition-colors shadow-xl shadow-red-900/40"
-              >
-                Open Demo
-                <ArrowRight className="h-5 w-5" />
-              </Link>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link
+                  href="/demo"
+                  className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-red-600 text-white font-bold text-lg hover:bg-red-500 transition-colors shadow-xl shadow-red-900/40"
+                >
+                  Open Demo
+                  <ArrowRight className="h-5 w-5" />
+                </Link>
+                <Link
+                  href="/upload"
+                  className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-red-600 text-white font-bold text-lg hover:bg-red-500 transition-colors shadow-xl shadow-red-900/40"
+                >
+                  Upload Your Run!
+                  <ArrowRight className="h-5 w-5" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -410,30 +417,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Disclaimer + Footer ───────────────────────────── */}
-      <footer className="border-t border-white/5 py-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-red-400" />
-              <span className="text-sm font-semibold">
-                <span className="text-red-400">Log</span>
-                <span className="text-white">Gate</span>
-              </span>
-              <span className="text-zinc-700 text-sm ml-1">Beta</span>
-            </div>
-            <p className="text-xs text-zinc-600 text-center max-w-xl leading-relaxed">
-              For closed-course, dyno, and educational use only. This tool validates datalog
-              structure and procedure compliance; it does not provide tuning advice.
-            </p>
-            <div className="flex gap-4 text-xs text-zinc-700">
-              <Link href="/demo" className="hover:text-zinc-400 transition-colors">Demo</Link>
-              <Link href="/metrics" className="hover:text-zinc-400 transition-colors">Metrics</Link>
-              <Link href="/upload" className="hover:text-zinc-400 transition-colors">Upload</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

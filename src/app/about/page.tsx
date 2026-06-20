@@ -14,7 +14,6 @@ import {
   Radio,
   GitBranch,
   Users,
-  ExternalLink,
   CheckCircle2,
   XCircle,
   BookOpen,
@@ -122,22 +121,16 @@ const PROOF_CARDS = [
     quote:
       "Remote tuning often becomes a repeated loop: log the car, send the file, wait for review, receive a revision, and repeat.",
     label: "Community pain point",
-    href: "https://forums.nasioc.com/forums/showthread.php?t=2773090",
-    linkLabel: "Forum discussion — NASIOC",
   },
   {
     quote:
       "Users frequently run into missing or incorrectly configured datalog channels, which can make a log less useful or unusable.",
     label: "Common data issue",
-    href: "https://cobbtuning.atlassian.net/wiki/spaces/PTS/pages/1311948882/DataLogging+Setup",
-    linkLabel: "COBB DataLogging Setup docs",
   },
   {
     quote:
       "Many tuner instructions require very specific pulls — WOT to redline in a specified gear. If the customer logs the wrong pull, the tuner cannot use it.",
     label: "Procedure issue",
-    href: "https://www.ecutek.com/support",
-    linkLabel: "EcuTek support guidelines",
   },
 ];
 
@@ -325,15 +318,6 @@ export default function AboutPage() {
                 <p className="text-sm text-zinc-300 leading-relaxed flex-1 italic">
                   &ldquo;{card.quote}&rdquo;
                 </p>
-                <a
-                  href={card.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 mt-4 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  {card.linkLabel}
-                </a>
               </div>
             </FadeIn>
           ))}
