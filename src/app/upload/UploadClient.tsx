@@ -181,14 +181,9 @@ const TAB_DEFS: Array<{
   icon: React.ElementType;
   needsResult: boolean;
 }> = [
-  { id: "schema", label: "Schema Mapping", icon: Table, needsResult: false },
-  {
-    id: "validation",
-    label: "Validation Report",
-    icon: ShieldCheck,
-    needsResult: true,
-  },
-  { id: "replay", label: "Gauge Replay", icon: Gauge, needsResult: true },
+  { id: "schema",     label: "Schema Mapping",    icon: Table,       needsResult: false },
+  { id: "validation", label: "Validation Report",  icon: ShieldCheck, needsResult: true  },
+  { id: "replay",     label: "Gauge Replay",        icon: Gauge,       needsResult: true  },
 ];
 
 function TabBar({
@@ -201,37 +196,71 @@ function TabBar({
   onSelect: (t: Tab) => void;
 }) {
   return (
-    <div className="flex gap-1 mb-5 border-b border-white/6 pb-1">
+    <div className="flex flex-wrap gap-2 mb-6 border-b border-white/8 pb-2">
       {TAB_DEFS.map(({ id, label, icon: Icon, needsResult }) => {
-        const isActive = active === id;
-        const disabled = needsResult && !hasResult;
+        const isActive  = active === id;
+        const disabled  = needsResult && !hasResult;
+        const available = !disabled;
+
         return (
-          <button
+          <motion.button
             key={id}
-            onClick={() => !disabled && onSelect(id)}
+            onClick={() => available && onSelect(id)}
             disabled={disabled}
+            /* lift + scale on hover; tap pushes down */
+            whileHover={available ? { y: -2, scale: 1.03 } : {}}
+            whileTap={available ? { scale: 0.97 } : {}}
+            transition={{ type: "spring", stiffness: 400, damping: 22 }}
             className={cn(
-              "flex items-center gap-1.5 px-4 py-2 rounded-t-lg text-xs font-medium transition-colors",
+              "relative overflow-hidden flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors select-none",
               isActive
-                ? "bg-red-600/15 border border-red-500/30 border-b-transparent text-red-300"
+                ? "bg-red-600/20 border border-red-500/50 text-red-300 shadow-[0_0_18px_2px_rgba(239,68,68,0.25)]"
                 : disabled
-                  ? "text-zinc-700 cursor-not-allowed"
-                  : "text-zinc-500 hover:text-zinc-200 hover:bg-white/4",
+                  ? "text-zinc-700 border border-transparent cursor-not-allowed"
+                  : "text-zinc-400 border border-white/8 hover:text-zinc-100 hover:border-white/20 hover:bg-white/5",
             )}
           >
-            <Icon className="h-3.5 w-3.5" />
+            {/* Shimmer sweep — only on active tab */}
+            {isActive && (
+              <motion.span
+                className="pointer-events-none absolute inset-0"
+                initial={{ x: "-100%" }}
+                animate={{ x: "200%" }}
+                transition={{
+                  duration: 1.6,
+                  repeat: Infinity,
+                  repeatDelay: 2.2,
+                  ease: "easeInOut",
+                }}
+                style={{
+                  background:
+                    "linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.18) 50%, transparent 65%)",
+                }}
+              />
+            )}
+
+            {/* Pulse dot on newly-available tabs */}
+            {available && !isActive && (
+              <motion.span
+                className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-red-400"
+                animate={{ opacity: [1, 0.2, 1] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+              />
+            )}
+
+            <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-red-400" : "")} />
             {label}
             {disabled && (
-              <span className="text-[9px] text-zinc-700 ml-1">(run first)</span>
+              <span className="text-[10px] text-zinc-700 ml-0.5 font-normal">(run first)</span>
             )}
-          </button>
+          </motion.button>
         );
       })}
     </div>
   );
 }
 
-// ─── Sidebar info panel ───────────────────────────────────────────────────────
+// ─── Supported formats (horizontal bottom strip) ──────────────────────────────
 
 const SUPPORTED_FORMATS = [
   {
@@ -256,74 +285,34 @@ const SUPPORTED_FORMATS = [
   },
 ];
 
-function Sidebar() {
+function FormatsStrip() {
   return (
-    <div className="space-y-5">
-      {/* Supported formats */}
-      <div className="rounded-xl border border-white/6 bg-[#111111] overflow-hidden">
-        <div className="px-5 py-4 border-b border-white/6 flex items-center gap-2">
-          <FileText className="h-4 w-4 text-red-400" />
-          <h2 className="text-sm font-semibold text-white">Supported Formats</h2>
-        </div>
-        <div className="divide-y divide-white/4">
-          {SUPPORTED_FORMATS.map((fmt) => (
-            <div key={fmt.name} className="px-5 py-4">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-sm font-medium text-zinc-200">
-                  {fmt.name}
-                </span>
-                <span
-                  className={cn(
-                    "rounded-full border px-2 py-0.5 text-[10px] font-bold",
-                    fmt.supported
-                      ? "bg-green-500/10 border-green-500/25 text-green-400"
-                      : "bg-white/3 border-white/8 text-zinc-600",
-                  )}
-                >
-                  {fmt.supported ? "Supported" : "Not supported"}
-                </span>
-              </div>
-              <p className="text-xs font-mono text-zinc-600 break-all leading-relaxed">
-                {fmt.example}
-              </p>
-            </div>
-          ))}
-        </div>
+    <div className="rounded-xl border border-white/6 bg-[#111111] overflow-hidden">
+      <div className="px-5 py-4 border-b border-white/6 flex items-center gap-2">
+        <FileText className="h-4 w-4 text-red-400" />
+        <h2 className="text-sm font-semibold text-white">Supported Formats</h2>
       </div>
-
-      {/* Privacy / processing info */}
-      <div className="rounded-xl border border-white/6 bg-[#111111] p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <Cpu className="h-4 w-4 text-red-400" />
-          <h2 className="text-sm font-semibold text-white">Local Processing</h2>
-        </div>
-        <p className="text-xs text-zinc-500 leading-relaxed mb-3">
-          Your CSV is read and processed entirely in your browser.
-          The raw file and datalog rows are never sent to a server.
-        </p>
-        <ul className="space-y-2 mb-4">
-          {[
-            "100% client-side — no server upload",
-            "No account or login required",
-            "File never leaves your device",
-            "Works offline after initial page load",
-          ].map((item) => (
-            <li key={item} className="flex items-center gap-2 text-xs text-zinc-400">
-              <div className="h-1.5 w-1.5 rounded-full bg-green-400 shrink-0" />
-              {item}
-            </li>
-          ))}
-        </ul>
-        {/* Metrics disclosure */}
-        <div className="rounded-lg border border-zinc-700/60 bg-zinc-900/60 px-3 py-2.5">
-          <p className="text-[11px] text-zinc-500 leading-relaxed">
-            <span className="text-zinc-400 font-semibold">Metrics note:</span>{" "}
-            An anonymous validation summary (score, outcome, format, row count) may
-            be used to update the public{" "}
-            <a href="/metrics" className="text-red-400 hover:underline">metrics dashboard</a>.
-            CSV files and raw datalog data are not stored.
-          </p>
-        </div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-white/4">
+        {SUPPORTED_FORMATS.map((fmt) => (
+          <div key={fmt.name} className="px-5 py-4">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-sm font-medium text-zinc-200">{fmt.name}</span>
+              <span
+                className={cn(
+                  "rounded-full border px-2 py-0.5 text-[10px] font-bold",
+                  fmt.supported
+                    ? "bg-green-500/10 border-green-500/25 text-green-400"
+                    : "bg-white/3 border-white/8 text-zinc-600",
+                )}
+              >
+                {fmt.supported ? "Supported" : "Not supported"}
+              </span>
+            </div>
+            <p className="text-xs font-mono text-zinc-600 break-all leading-relaxed">
+              {fmt.example}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -344,6 +333,9 @@ export function UploadClient() {
   const pendingLogRef       = useRef<ParsedLog | null>(null);
   const pendingResultRef    = useRef<ValidationResult | null>(null);
   const pendingMetricsRef   = useRef<ValidationMetricsEvent | null>(null);
+
+  // Ref for the results panel — used to scroll it into view after animation
+  const resultsPanelRef = useRef<HTMLDivElement | null>(null);
 
   // ── File ready — auto-parse immediately for template compatibility preview ──
 
@@ -453,6 +445,11 @@ export function UploadClient() {
     }
 
     pendingMetricsRef.current = null;
+
+    // Scroll results into view after state updates flush
+    requestAnimationFrame(() => {
+      resultsPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }, []);
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -461,8 +458,8 @@ export function UploadClient() {
 
   return (
     <PageShell>
-      {/* Header */}
-      <div className="mb-10">
+      {/* ── Header ──────────────────────────────────────────────────────────── */}
+      <div className="mb-8">
         <div className="flex items-center gap-2 mb-3">
           <Upload className="h-5 w-5 text-red-400" />
           <p className="text-xs font-semibold uppercase tracking-widest text-red-400">
@@ -479,32 +476,84 @@ export function UploadClient() {
         </p>
       </div>
 
-      {/* Main two-column grid */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* ── Left panel ────────────────────────────────────────────── */}
-        <div className="lg:col-span-1 space-y-5">
-          {/* Uploader */}
+      {/* ── ROW 1: Uploader (left) + Run button panel (right) ───────────────── */}
+      <div className="grid lg:grid-cols-3 gap-5 mb-6">
+        {/* Uploader — takes 2/3 */}
+        <div className="lg:col-span-2">
           <CsvUploader
             onFileLoaded={handleFileLoaded}
             loadedFile={loadedFile}
             onClear={handleClear}
             isProcessing={isLoading}
           />
+        </div>
 
-          {/* Template selector — appears after file is loaded */}
-          {loadedFile && (
-            <motion.div
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-3"
-            >
-              <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
-                Validation template
+        {/* Run button panel — takes 1/3, always visible */}
+        <div className="flex flex-col gap-4">
+          <button
+            onClick={handleRun}
+            disabled={!canRun}
+            className={cn(
+              "w-full flex items-center justify-center gap-2 rounded-xl px-5 py-4 text-sm font-bold transition-all",
+              canRun
+                ? "bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-900/30 hover:shadow-red-900/50"
+                : "bg-zinc-800/60 text-zinc-600 cursor-not-allowed border border-white/5",
+            )}
+          >
+            <Play className="h-4 w-4" />
+            Run Validation
+          </button>
+
+          {/* Processing info */}
+          <div className="rounded-xl border border-white/6 bg-[#111111] p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Cpu className="h-4 w-4 text-red-400" />
+              <h2 className="text-sm font-semibold text-white">Local Processing</h2>
+            </div>
+            <ul className="space-y-1.5 mb-3">
+              {[
+                "100% client-side — no server upload",
+                "File never leaves your device",
+                "No account or login required",
+              ].map((item) => (
+                <li key={item} className="flex items-center gap-2 text-xs text-zinc-400">
+                  <div className="h-1.5 w-1.5 rounded-full bg-green-400 shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <div className="rounded-lg border border-zinc-700/60 bg-zinc-900/60 px-3 py-2">
+              <p className="text-[11px] text-zinc-500 leading-relaxed">
+                <span className="text-zinc-400 font-semibold">Metrics note:</span>{" "}
+                An anonymous validation summary may update the public{" "}
+                <a href="/metrics" className="text-red-400 hover:underline">metrics dashboard</a>.
+                CSV files and raw data are not stored.
               </p>
-              <TemplateSelector
-                template={selectedTemplate}
-                onTemplateChange={setSelectedTemplate}
-              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── ROW 2: Template config — full width, 2 columns, appears after upload ── */}
+      {loadedFile && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mb-6"
+        >
+          <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500 mb-3">
+            Validation Template
+          </p>
+          <div className="grid lg:grid-cols-2 gap-5">
+            {/* Left: selector (preset grid + optional builder) */}
+            <TemplateSelector
+              template={selectedTemplate}
+              onTemplateChange={setSelectedTemplate}
+            />
+
+            {/* Right: preview + compatibility stacked */}
+            <div className="space-y-4">
               <TemplatePreviewCard template={selectedTemplate} />
               {parsedLog && (
                 <TemplateCompatibilityCard
@@ -512,127 +561,94 @@ export function UploadClient() {
                   template={selectedTemplate}
                 />
               )}
-            </motion.div>
-          )}
+            </div>
+          </div>
+        </motion.div>
+      )}
 
-          {/* Run button */}
-          {loadedFile && (
-            <motion.button
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              onClick={handleRun}
-              disabled={!canRun}
-              className={cn(
-                "w-full flex items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-sm font-semibold transition-all",
-                canRun
-                  ? "bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-900/30 hover:shadow-red-900/50"
-                  : "bg-zinc-800 text-zinc-600 cursor-not-allowed",
-              )}
-            >
-              <Play className="h-4 w-4" />
-              Run Validation
-            </motion.button>
-          )}
+      {/* ── ROW 3: Results panel — full width ───────────────────────────────── */}
+      <div ref={resultsPanelRef} />
+      <AnimatePresence mode="wait">
+        {isLoading ? (
+          <DynoLoadingAnimation
+            key="animation"
+            onComplete={handleAnimationComplete}
+          />
+        ) : parsedLog ? (
+          <div key="results" className="mb-8">
+            <TabBar
+              active={activeTab}
+              hasResult={!!validationResult}
+              onSelect={setActiveTab}
+            />
 
-          {/* Sidebar */}
-          <Sidebar />
-        </div>
+            {activeTab === "schema" && <ParseSummary log={parsedLog} />}
 
-        {/* ── Right panel ───────────────────────────────────────────── */}
-        <div className="lg:col-span-2">
-          <AnimatePresence mode="wait">
-            {isLoading ? (
-              <DynoLoadingAnimation
-                key="animation"
-                onComplete={handleAnimationComplete}
+            {activeTab === "validation" && validationResult && (
+              <ValidationDashboard
+                result={validationResult}
+                rows={parsedLog.rows}
               />
-            ) : parsedLog ? (
-              <div key="results">
-                <TabBar
-                  active={activeTab}
-                  hasResult={!!validationResult}
-                  onSelect={setActiveTab}
+            )}
+
+            {activeTab === "replay" && validationResult && (
+              <div className="rounded-xl border border-white/6 bg-[#111111] p-5">
+                <div className="flex items-center gap-2 mb-5">
+                  <Gauge className="h-4 w-4 text-red-400" />
+                  <h2 className="text-sm font-semibold text-white">
+                    Gauge Cluster Replay
+                  </h2>
+                  <span className="ml-2 text-xs text-zinc-600">
+                    {parsedLog.rows.length} rows ·{" "}
+                    {(
+                      (parsedLog.rows[parsedLog.rows.length - 1]?.timeSec ?? 0) -
+                      (parsedLog.rows[0]?.timeSec ?? 0)
+                    ).toFixed(1)}{" "}
+                    s total
+                  </span>
+                </div>
+                <GaugeCluster
+                  rows={parsedLog.rows}
+                  pullWindow={validationResult.pullWindow}
+                  failureEvents={validationResult.failureEvents}
                 />
-
-                {activeTab === "schema" && <ParseSummary log={parsedLog} />}
-
-                {activeTab === "validation" && validationResult && (
-                  <ValidationDashboard
-                    result={validationResult}
-                    rows={parsedLog.rows}
-                  />
-                )}
-
-                {activeTab === "replay" && validationResult && (
-                  <div className="rounded-xl border border-white/6 bg-[#111111] p-5">
-                    <div className="flex items-center gap-2 mb-5">
-                      <Gauge className="h-4 w-4 text-red-400" />
-                      <h2 className="text-sm font-semibold text-white">
-                        Gauge Cluster Replay
-                      </h2>
-                      <span className="ml-2 text-xs text-zinc-600">
-                        {parsedLog.rows.length} rows ·{" "}
-                        {(
-                          (parsedLog.rows[parsedLog.rows.length - 1]?.timeSec ?? 0) -
-                          (parsedLog.rows[0]?.timeSec ?? 0)
-                        ).toFixed(1)}{" "}
-                        s total
-                      </span>
-                    </div>
-                    <GaugeCluster
-                      rows={parsedLog.rows}
-                      pullWindow={validationResult.pullWindow}
-                      failureEvents={validationResult.failureEvents}
-                    />
-                  </div>
-                )}
-              </div>
-            ) : (
-              /* Empty state */
-              <div
-                key="empty"
-                className="rounded-xl border border-dashed border-white/8 bg-[#0d0d0d] flex flex-col items-center justify-center min-h-[500px] gap-5 p-8 text-center"
-              >
-                <div className="h-16 w-16 rounded-2xl border border-white/6 bg-[#111111] flex items-center justify-center">
-                  <Upload className="h-8 w-8 text-zinc-700" />
-                </div>
-                <div>
-                  <p className="text-zinc-400 font-medium mb-2">
-                    Validation results will appear here
-                  </p>
-                  <p className="text-sm text-zinc-600 max-w-xs leading-relaxed">
-                    Upload a CSV file and click{" "}
-                    <span className="text-red-400 font-medium">Run Validation</span>{" "}
-                    to see the schema mapping, validation report, and gauge replay.
-                  </p>
-                </div>
-
-                {/* Feature chips */}
-                <div className="flex flex-wrap gap-2 justify-center text-xs text-zinc-700 mt-1">
-                  {[
-                    "Format detection",
-                    "Column mapping",
-                    "Pull window detection",
-                    "Rule validation",
-                    "Charts",
-                    "Gauge replay",
-                  ].map((label) => (
-                    <span
-                      key={label}
-                      className="rounded-full border border-white/6 bg-[#111111] px-3 py-1"
-                    >
-                      {label}
-                    </span>
-                  ))}
-                </div>
               </div>
             )}
-          </AnimatePresence>
-        </div>
-      </div>
+          </div>
+        ) : (
+          /* Empty state */
+          <div
+            key="empty"
+            className="rounded-xl border border-dashed border-white/8 bg-[#0d0d0d] flex flex-col items-center justify-center min-h-[360px] gap-5 p-8 text-center mb-8"
+          >
+            <div className="h-16 w-16 rounded-2xl border border-white/6 bg-[#111111] flex items-center justify-center">
+              <Upload className="h-8 w-8 text-zinc-700" />
+            </div>
+            <div>
+              <p className="text-zinc-400 font-medium mb-2">
+                Validation results will appear here
+              </p>
+              <p className="text-sm text-zinc-600 max-w-xs leading-relaxed">
+                Upload a CSV file, select a template, and click{" "}
+                <span className="text-red-400 font-medium">Run Validation</span>.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 justify-center text-xs text-zinc-700 mt-1">
+              {["Format detection", "Column mapping", "Pull window detection", "Rule validation", "Charts", "Gauge replay"].map((label) => (
+                <span key={label} className="rounded-full border border-white/6 bg-[#111111] px-3 py-1">
+                  {label}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── ROW 4: Supported formats — horizontal strip ──────────────────────── */}
+      <FormatsStrip />
 
       {/* Disclaimer */}
-      <div className="mt-10 rounded-lg border border-white/4 bg-[#0d0d0d] px-5 py-4">
+      <div className="mt-6 rounded-lg border border-white/4 bg-[#0d0d0d] px-5 py-4">
         <p className="text-xs text-zinc-600 text-center">
           For closed-course, dyno, and educational use only. This tool validates
           datalog structure and procedure compliance; it does not provide tuning advice.
